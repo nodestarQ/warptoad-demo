@@ -1,0 +1,24 @@
+{
+  "name": "warptoad-demo",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "aztec:deploy": "cd ./scripts/deploy/aztec && pnpm dlx tsx  deploy.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.1",
+    "typescript": "~5.8.3"
+  },
+  "dependencies": {
+    "@aztec/accounts": "3.0.0-devnet.5",
+    "@aztec/aztec.js": "3.0.0-devnet.5",
+    "@aztec/bb.js": "0.72.1",
+    "@aztec/ethereum": "3.0.0-devnet.5",
+    "@aztec/foundation": "3.0.0-devnet.5",
+    "@aztec/kv-store": "3.0.0-devnet.5",
+    "@aztec/noir-contracts.js": "3.0.0-devnet.5",
+    "@aztec/pxe": "3.0.0-devnet.5",
+    "@aztec/test-wallet": "3.0.0-devnet.5",
+    "server": "link:@aztec/pxe/server"
+  }
+}
