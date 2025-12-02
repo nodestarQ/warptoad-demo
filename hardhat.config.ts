@@ -1,11 +1,12 @@
 import hardhatToolboxViemPlugin from "@nomicfoundation/hardhat-toolbox-viem";
+import hardhatTypechain from "@nomicfoundation/hardhat-typechain";
+import hardhatVerify from "@nomicfoundation/hardhat-verify";
 import { configVariable, defineConfig } from "hardhat/config";
 
 
 const SEPOLIA_URL = configVariable("SEPOLIA_URL");
 const PRIVATE_KEY = configVariable("PRIVATE_KEY");
 const ETHERSCAN_KEY = configVariable("ETHERSCAN_KEY");
-const ETHERSCAN_KEY_SCROLL = configVariable("ETHERSCAN_KEY_SCROLL");
 
 const DEFAULT_PRIV_KEYS_ANVIL = [
   "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
@@ -28,7 +29,7 @@ export default defineConfig({
     cache: "./cache",
     artifacts: "./artifacts",
   },
-  plugins: [hardhatToolboxViemPlugin],
+  plugins: [hardhatToolboxViemPlugin, hardhatTypechain, hardhatVerify],
   solidity: {
     version: "0.8.29",
     settings: {
@@ -38,6 +39,18 @@ export default defineConfig({
       },
       evmVersion: "cancun",
     },
+    npmFilesToBuild: [
+      "poseidon-solidity/PoseidonT3.sol",
+      "@zk-kit/lazy-imt.sol/LazyIMT.sol",
+      "@zk-kit/lazy-imt.sol/InternalLazyIMT.sol",
+      "@zk-kit/lazy-imt.sol/Constants.sol",
+      "@openzeppelin/contracts/token/ERC20/ERC20.sol",
+      "@openzeppelin/contracts/token/ERC20/IERC20.sol",
+      "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol",
+      "@openzeppelin/contracts/utils/Context.sol",
+      "@scroll-tech/contracts/L1/IL1ScrollMessenger.sol",
+      "@scroll-tech/contracts/L2/IL2ScrollMessenger.sol",
+    ],
   },
   networks: {
     hardhatMainnet: {
@@ -65,6 +78,7 @@ export default defineConfig({
       type: "http",
       url: "http://localhost:8545",
       accounts: DEFAULT_PRIV_KEYS_ANVIL,
+      chainId: 31337,
     },
   },
   verify: {

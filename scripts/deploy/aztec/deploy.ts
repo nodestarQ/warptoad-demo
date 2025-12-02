@@ -11,16 +11,19 @@ import { AztecAddress } from '@aztec/aztec.js/addresses';
 import { SponsoredFeePaymentMethod } from '@aztec/aztec.js/fee/testing';
 import { getContractInstanceFromInstantiationParams } from '@aztec/aztec.js/contracts';
 import { SponsoredFPCContract } from "@aztec/noir-contracts.js/SponsoredFPC";
+import { AccountManager } from '@aztec/aztec.js/wallet';
+import { USDcoin } from '../../../types/ethers-contracts/index.ts';
 
 const PXE_URL = "http://localhost:8080";
 
-const __dirname = "./";
+const __dirname = "./testWalletStore";
 
 
 type AccountKeys = {
     secretKey: Fr;
     salt: Fr;
-    signingPrivateKey: Fq
+    signingPrivateKey: Fq;
+    deployed: boolean;
 }
 
 const deployerKeysFileName = "./deployer-keys.json"
@@ -30,7 +33,8 @@ function createNewAccountKeys(): AccountKeys {
     const accountKeys: AccountKeys = {
         secretKey: Fr.random(),
         salt: new Fr(0),
-        signingPrivateKey: GrumpkinScalar.random()
+        signingPrivateKey: GrumpkinScalar.random(),
+        deployed: false
     }
     return accountKeys
 }
@@ -39,7 +43,8 @@ function storeDeployerAccountKeys(keys: AccountKeys, fileName: string) {
     const serializable = {
         secretKey: keys.secretKey.toString(),
         salt: keys.salt.toString(),
-        signingPrivateKey: keys.signingPrivateKey.toString()
+        signingPrivateKey: keys.signingPrivateKey.toString(),
+        deployed: keys.deployed
     };
 
     const filePath = join(__dirname, fileName);
@@ -57,6 +62,7 @@ function loadDeployerAccountKeys(fileName: string) {
         secretKey: Fr.fromString(data.secretKey),
         salt: Fr.fromString(data.salt),
         signingPrivateKey: Fq.fromString(data.signingPrivateKey),
+        deployed: data.deployed
     };
 }
 
@@ -142,6 +148,18 @@ async function getSponsoredFPCInstance() {
     return sponsoredFPCInstance
 }
 
+async function createAccount(accountKeys: AccountKeys) {
+    const nodeUrl = process.env.AZTEC_NODE_URL || "http://localhost:8080";
+    const node = createAztecNodeClient(nodeUrl);
+    const wallet = await TestWallet.create(node);
+
+    const initialAccount = await wallet.createSchnorrAccount(
+        accountKeys.secretKey,
+        accountKeys.salt
+    );
+
+    return initialAccount
+}
 
 async function deployWallet(accountKeys: AccountKeys) {
 
@@ -156,39 +174,39 @@ async function deployWallet(accountKeys: AccountKeys) {
 
     const sponsoredFPCInstance = await getSponsoredFPCInstance();
 
-    console.log("\n " + sponsoredFPCInstance.address)
+    console.log("registering sponsored fpc instance contract with pxe");
+
+    await wallet.registerContract(
+        sponsoredFPCInstance,
+        SponsoredFPCContract.artifact
+    );
+
+    console.log("\n sponsoredFPCInstance address:" + sponsoredFPCInstance.address + "\n")
 
     const sponsoredPaymentMethod = new SponsoredFeePaymentMethod(
         sponsoredFPCInstance.address
     );
-
     const deployMethod = await initialAccount.getDeployMethod();
-    await deployMethod
-        .send({
-            from: AztecAddress.ZERO,
-            fee: { paymentMethod: sponsoredPaymentMethod },
-        })
-        .wait();
+    try {
+        await deployMethod
+            .send({
+                from: AztecAddress.ZERO,
+                fee: { paymentMethod: sponsoredPaymentMethod },
+            })
+            .wait();
+        storeDeployerAccountKeys({ ...accountKeys, deployed: true }, deployerKeysFileName)
 
-    console.log("wallet got deployed YaY!!!")
+        console.log("wallet got deployed YaY!!!: ", initialAccount.address)
 
+        return initialAccount;
 
-    /*
-    
-    const deployMethod = await anotherAccount.getDeployMethod();
-    await deployMethod
-      .send({
-        from: AztecAddress.ZERO,
-        fee: { paymentMethod: sponsoredPaymentMethod },
-      })
-      .wait();
-    
-    */
+    } catch (error) {
+        console.log(error)
+    }
 
 }
 
-
-async function main() {
+async function deployAdminWallet() {
 
     if (!isValidAccountKeys(deployerKeysFileName)) {
         const newDeployerAccountKeys = createNewAccountKeys();
@@ -196,14 +214,43 @@ async function main() {
     }
 
     const readKeys = loadDeployerAccountKeys(deployerKeysFileName);
-    await deployWallet(readKeys)
-    //console.log(readKeys);
+    if (!readKeys.deployed) {
+        try {
+            await deployWallet(readKeys)
+        } catch (error) {
+            throw error
+        }
+    } else {
+        console.log("wallet is already deployed")
+    }
+
+    const returnAccount = await createAccount(readKeys)
+    return returnAccount
+}
+
+export async function deployAztecWarpToad(nativeToken: USDcoin | any, deployerWallet: TestWallet, sponsoredPaymentMethod: SponsoredFeePaymentMethod | undefined) {
+    console.log("deploying Aztec Warptoad")
+    const name = `wrapped-warptoad-${await nativeToken.name()}`;
+    const symbol = `wrptd-${(await nativeToken.symbol()).toUpperCase()}`;
+    const decimals = 6n; // only 6 decimals what is this tether??
+
+    const AztecWarpToad = await WarpToadCoreContract.deploy(deployerWallet, nativeToken.target, name, symbol, decimals).send({ fee: { paymentMethod: sponsoredPaymentMethod }, from: (await deployerWallet.getAccounts())[0].item }).deployed({ timeout: 60 * 60 * 12 });
+
+    return { AztecWarpToad };
+}
 
 
 
+async function main() {
+    //deploy admin wallet
+    const adminAccount = await deployAdminWallet()
 
-    //check if deployer wallet is already created
-    //yes, skip and use wallet data, else create new
+    console.log("\nadmin wallet: ", adminAccount.address)
+
+    //deploy Contract 1
+
+
+
 
 }
 

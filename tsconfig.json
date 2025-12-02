@@ -2,15 +2,14 @@
 {
   "compilerOptions": {
     "lib": ["es2023"],
-    "module": "nodenext",
+    "module": "node16",
     "target": "es2022",
     "strict": true,
     "esModuleInterop": true,
-    "skipLibCheck": true,
-    "moduleResolution": "nodenext",
-    "outDir": "dist",
-    "resolveJsonModule": true,
     "noEmit": true,
-    "allowImportingTsExtensions": true
+    "allowImportingTsExtensions": true,
+    "skipLibCheck": true,
+    "moduleResolution": "node16",
+    "outDir": "dist"
   }
 }
