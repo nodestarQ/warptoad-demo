@@ -1,7 +1,7 @@
 import hardhatToolboxViemPlugin from "@nomicfoundation/hardhat-toolbox-viem";
 import hardhatTypechain from "@nomicfoundation/hardhat-typechain";
 import hardhatVerify from "@nomicfoundation/hardhat-verify";
-import { configVariable, defineConfig } from "hardhat/config";
+import { configVariable, defineConfig, HardhatUserConfig } from "hardhat/config";
 
 
 const SEPOLIA_URL = configVariable("SEPOLIA_URL");
@@ -21,36 +21,49 @@ const DEFAULT_PRIV_KEYS_ANVIL = [
   "0x2a871d0798f97d79848a013d4936a73bf4cc922c825d33c1cf7073dff6d409c6",
 ];
 
+const npmFilesToBuild = [
+  "poseidon-solidity/PoseidonT3.sol",
+"@zk-kit/lazy-imt.sol/LazyIMT.sol",
+  "@zk-kit/lazy-imt.sol/InternalLazyIMT.sol",
+  "@zk-kit/lazy-imt.sol/Constants.sol",
+  "@openzeppelin/contracts/token/ERC20/ERC20.sol",
+  "@openzeppelin/contracts/token/ERC20/IERC20.sol",
+  "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol",
+  "@openzeppelin/contracts/utils/Context.sol",
+  "@scroll-tech/contracts/L1/IL1ScrollMessenger.sol",
+  "@scroll-tech/contracts/L2/IL2ScrollMessenger.sol",
+]
 
 export default defineConfig({
   paths: {
-    sources: "./contracts",
+    sources: ["./contracts"],
     tests: "./test",
     cache: "./cache",
     artifacts: "./artifacts",
   },
-  plugins: [hardhatToolboxViemPlugin, hardhatTypechain, hardhatVerify],
+  plugins: [hardhatToolboxViemPlugin, hardhatVerify],
   solidity: {
-    version: "0.8.29",
-    settings: {
-      optimizer: {
-        enabled: true,
-        runs: 1000,
+    npmFilesToBuild: npmFilesToBuild,
+    profiles: {
+      default: {
+        version: "0.8.29",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 20,
+          },
+        },
       },
-      evmVersion: "cancun",
+      production: {
+        version: "0.8.29",
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 20,
+          },
+        },
+      },
     },
-    npmFilesToBuild: [
-      "poseidon-solidity/PoseidonT3.sol",
-      "@zk-kit/lazy-imt.sol/LazyIMT.sol",
-      "@zk-kit/lazy-imt.sol/InternalLazyIMT.sol",
-      "@zk-kit/lazy-imt.sol/Constants.sol",
-      "@openzeppelin/contracts/token/ERC20/ERC20.sol",
-      "@openzeppelin/contracts/token/ERC20/IERC20.sol",
-      "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol",
-      "@openzeppelin/contracts/utils/Context.sol",
-      "@scroll-tech/contracts/L1/IL1ScrollMessenger.sol",
-      "@scroll-tech/contracts/L2/IL2ScrollMessenger.sol",
-    ],
   },
   networks: {
     hardhatMainnet: {
@@ -86,4 +99,4 @@ export default defineConfig({
       apiKey: ETHERSCAN_KEY,
     },
   }
-});
+})

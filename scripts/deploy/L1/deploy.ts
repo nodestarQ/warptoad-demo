@@ -85,7 +85,7 @@ async function main() {
 
     const name = `wrapped-warptoad-${await nativeToken.read.name()}`;
     const symbol = `wrptd-${(await nativeToken.read.symbol()).toUpperCase()}`;
-
+    console.log("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
     const { L1WarpToad, withdrawVerifier, PoseidonT3Lib, LazyIMTLib } = await ignition.deploy(L1WarpToadModule, {
         parameters: {
             L1WarpToadModule: {
@@ -96,6 +96,7 @@ async function main() {
             }
         },
     });
+    console.log({LazyIMTLib})
     const IS_MAINNET = chainId === 1n
     const L1ScrollMessengerAddress = IS_MAINNET ? L1_SCROLL_MESSENGER_MAINNET : L1_SCROLL_MESSENGER_SEPOLIA
     //--------------------infra------------------------

@@ -12,15 +12,16 @@
     "aztec:deploy": "pnpm tsx ./scripts/deploy/aztec/deploy.ts"
   },
   "devDependencies": {
-    "@nomicfoundation/hardhat-ignition": "^3.0.5",
+    "@nomicfoundation/hardhat-ignition": "^3.0.6",
     "@nomicfoundation/hardhat-toolbox-viem": "^5.0.1",
     "@nomicfoundation/hardhat-typechain": "^3.0.1",
-    "@nomicfoundation/hardhat-verify": "^3.0.7",
+    "@nomicfoundation/hardhat-verify": "^3.0.8",
     "@types/argparse": "^2.0.17",
     "@types/node": "^22.19.1",
     "argparse": "^2.0.1",
+    "ethers": "^6.16.0",
     "forge-std": "github:foundry-rs/forge-std#v1.9.4",
-    "hardhat": "^3.0.16",
+    "hardhat": "^3.0.17",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
     "typescript": "~5.8.3",
@@ -42,11 +43,11 @@
     "@zk-kit/imt": "^2.0.0-beta.8",
     "@zk-kit/lazy-imt.sol": "^2.0.0-beta.12",
     "@zkpassport/poseidon2": "^0.6.1",
-    "ethers": "^6.15.0",
     "fixed-merkle-tree": "^0.7.3",
     "minimatch": "^10.0.3",
     "poseidon-lite": "^0.3.0",
     "poseidon-solidity": "^0.0.5",
     "server": "link:@aztec/pxe/server"
-  }
+  },
+  "packageManager": "pnpm@10.24.0+sha512.01ff8ae71b4419903b65c60fb2dc9d34cf8bb6e06d03bde112ef38f7a34d6904c424ba66bea5cdcf12890230bf39f9580473140ed9c946fef328b6e5238a345a"
 }
